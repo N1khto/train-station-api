@@ -17,6 +17,26 @@ class Route(models.Model):
     destination = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="routes_destination")
     distance = models.PositiveSmallIntegerField()
 
+    @staticmethod
+    def validate_route(source, destination, error_to_raise):
+        if source == destination:
+            raise error_to_raise({"destination": "source and destination can't be the same place"})
+
+    def clean(self):
+        Route.validate_route(self.source, self.destination, ValidationError)
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super(Route, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
     def __str__(self):
         return f"{self.source.name} - {self.destination.name}"
 
@@ -27,6 +47,9 @@ class Crew(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    class Meta:
+        verbose_name_plural = "crew"
 
 
 class TrainType(models.Model):
@@ -41,6 +64,9 @@ class Train(models.Model):
     carriage_num = models.PositiveSmallIntegerField()
     places_in_carriage = models.PositiveSmallIntegerField()
     train_type = models.ForeignKey(TrainType, on_delete=models.SET_NULL, null=True, related_name="trains")
+
+    def __str__(self):
+        return self.name
 
 
 class Journey(models.Model):
