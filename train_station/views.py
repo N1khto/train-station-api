@@ -1,11 +1,13 @@
 from rest_framework import mixins
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
-from train_station.models import Station, Route, TrainType, Train, Crew, Journey
+from train_station.models import Station, Route, TrainType, Train, Crew, Journey, Order
 from train_station.permissions import IsAdminOrIfAuthenticatedReadOnly
 from train_station.serializers import StationSerializer, RouteSerializer, RouteDetailSerializer, TrainTypeSerializer, \
     TrainSerializer, CrewSerializer, CrewDetailSerializer, RouteListSerializer, CrewListSerializer, JourneySerializer, \
-    JourneyListSerializer, JourneyDetailSerializer
+    JourneyListSerializer, JourneyDetailSerializer, OrderSerializer, OrderListSerializer
 
 
 class StationViewSet(
@@ -90,3 +92,30 @@ class JourneyViewSet(
         if self.action == "retrieve":
             return JourneyDetailSerializer
         return JourneySerializer
+
+
+class OrderPagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
+
+
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    pagination_class = OrderPagination
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OrderListSerializer
+        return OrderSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
