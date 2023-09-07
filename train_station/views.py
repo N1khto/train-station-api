@@ -1,3 +1,4 @@
+from django.db.models import Q, F, Count
 from rest_framework import mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -82,9 +83,25 @@ class JourneyViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Journey.objects.all()
+    queryset = Journey.objects.all().select_related("route", "train").annotate(
+        tickets_available=(F("train__carriage_num") * F("train__places_in_carriage") - Count("tickets"))
+    )
     serializer_class = JourneySerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        train_name = self.request.query_params.get("train_name")
+        station = self.request.query_params.get("station")
+
+        queryset = self.queryset
+
+        if train_name:
+            queryset = queryset.filter(train__name__icontains=train_name)
+
+        if station:
+            queryset = queryset.filter(Q(route__source__name__icontains=station) | Q(route__destination__name__icontains=station))
+
+        return queryset.distinct()
 
     def get_serializer_class(self):
         if self.action == "list":

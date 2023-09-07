@@ -78,10 +78,12 @@ class JourneySerializer(serializers.ModelSerializer):
 class JourneyListSerializer(JourneySerializer):
     route = serializers.SlugRelatedField(many=False, read_only=True, slug_field="route")
     crew = serializers.SlugRelatedField(many=True, read_only=True, slug_field="full_name")
+    train = serializers.SlugRelatedField(many=False, read_only=True, slug_field="name")
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Journey
-        fields = ("id", "route", "departure_time", "arrival_time", "crew")
+        fields = ("id", "route", "train", "tickets_available", "departure_time", "arrival_time", "crew")
 
 
 class JourneyDetailSerializer(JourneySerializer):
@@ -90,10 +92,11 @@ class JourneyDetailSerializer(JourneySerializer):
     distance = serializers.SlugRelatedField(many=False, read_only=True, source="route", slug_field="distance")
     train = TrainSerializer(many=False, read_only=True)
     crew = CrewSerializer(many=True, read_only=True)
+    tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Journey
-        fields = ("id", "source", "destination", "distance", "train", "departure_time", "arrival_time", "crew")
+        fields = ("id", "source", "destination", "distance", "train", "tickets_available", "departure_time", "arrival_time", "crew")
 
 
 class TicketSerializer(serializers.ModelSerializer):
