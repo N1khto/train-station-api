@@ -1,4 +1,6 @@
 from django.db.models import Q, F, Count
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -109,6 +111,23 @@ class JourneyViewSet(
         if self.action == "retrieve":
             return JourneyDetailSerializer
         return JourneySerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "train_name",
+                type=OpenApiTypes.STR,
+                description="Search by train name (ex. ?train_name=azov)",
+            ),
+            OpenApiParameter(
+                "station",
+                type=OpenApiTypes.STR,
+                description="Search by station (ex. ?station=Kyiv)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class OrderPagination(PageNumberPagination):
