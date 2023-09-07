@@ -17,9 +17,13 @@ class Station(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="routes_source")
-    destination = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="routes_destination")
+    source = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="route_source")
+    destination = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="route_destination")
     distance = models.PositiveSmallIntegerField()
+
+    @property
+    def route(self):
+        return f"{self.source.name} - {self.destination.name}"
 
     @staticmethod
     def validate_route(source, destination, error_to_raise):
@@ -42,7 +46,7 @@ class Route(models.Model):
         )
 
     def __str__(self):
-        return f"{self.source.name} - {self.destination.name}"
+        return self.route
 
 
 class Crew(models.Model):
