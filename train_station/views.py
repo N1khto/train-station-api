@@ -6,11 +6,32 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import GenericViewSet
 
-from train_station.models import Station, Route, TrainType, Train, Crew, Journey, Order
+from train_station.models import (
+    Station,
+    Route,
+    TrainType,
+    Train,
+    Crew,
+    Journey,
+    Order,
+)
 from train_station.permissions import IsAdminOrIfAuthenticatedReadOnly
-from train_station.serializers import StationSerializer, RouteSerializer, RouteDetailSerializer, TrainTypeSerializer, \
-    TrainSerializer, CrewSerializer, CrewDetailSerializer, RouteListSerializer, CrewListSerializer, JourneySerializer, \
-    JourneyListSerializer, JourneyDetailSerializer, OrderSerializer, OrderListSerializer
+from train_station.serializers import (
+    StationSerializer,
+    RouteSerializer,
+    RouteDetailSerializer,
+    TrainTypeSerializer,
+    TrainSerializer,
+    CrewSerializer,
+    CrewDetailSerializer,
+    RouteListSerializer,
+    CrewListSerializer,
+    JourneySerializer,
+    JourneyListSerializer,
+    JourneyDetailSerializer,
+    OrderSerializer,
+    OrderListSerializer,
+)
 
 
 class StationViewSet(
@@ -67,7 +88,9 @@ class CrewViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Crew.objects.prefetch_related("journeys__route__source", "journeys__route__destination")
+    queryset = Crew.objects.prefetch_related(
+        "journeys__route__source", "journeys__route__destination"
+    )
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -85,9 +108,17 @@ class JourneyViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Journey.objects.all().select_related("route__source", "route__destination", "train").annotate(
-        tickets_available=(F("train__carriage_num") * F("train__places_in_carriage") - Count("tickets"))
-    ).prefetch_related("crew")
+    queryset = (
+        Journey.objects.all()
+        .select_related("route__source", "route__destination", "train")
+        .annotate(
+            tickets_available=(
+                F("train__carriage_num") * F("train__places_in_carriage")
+                - Count("tickets")
+            )
+        )
+        .prefetch_related("crew")
+    )
     serializer_class = JourneySerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -101,7 +132,10 @@ class JourneyViewSet(
             queryset = queryset.filter(train__name__icontains=train_name)
 
         if station:
-            queryset = queryset.filter(Q(route__source__name__icontains=station) | Q(route__destination__name__icontains=station))
+            queryset = queryset.filter(
+                Q(route__source__name__icontains=station)
+                | Q(route__destination__name__icontains=station)
+            )
 
         return queryset.distinct()
 

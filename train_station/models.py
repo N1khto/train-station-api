@@ -17,8 +17,18 @@ class Station(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="route_source")
-    destination = models.ForeignKey(Station, on_delete=models.SET_NULL, null=True, related_name="route_destination")
+    source = models.ForeignKey(
+        Station,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="route_source",
+    )
+    destination = models.ForeignKey(
+        Station,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="route_destination",
+    )
     distance = models.PositiveSmallIntegerField()
 
     @property
@@ -28,7 +38,12 @@ class Route(models.Model):
     @staticmethod
     def validate_route(source, destination, error_to_raise):
         if source == destination:
-            raise error_to_raise({"destination": "source and destination can't be the same place"})
+            raise error_to_raise(
+                {
+                    "destination": "source and destination "
+                                   "can't be the same place"
+                }
+            )
 
     def clean(self):
         Route.validate_route(self.source, self.destination, ValidationError)
@@ -81,7 +96,9 @@ class Train(models.Model):
     name = models.CharField(max_length=255)
     carriage_num = models.PositiveSmallIntegerField()
     places_in_carriage = models.PositiveSmallIntegerField()
-    train_type = models.ForeignKey(TrainType, on_delete=models.SET_NULL, null=True, related_name="trains")
+    train_type = models.ForeignKey(
+        TrainType, on_delete=models.SET_NULL, null=True, related_name="trains"
+    )
     image = models.ImageField(null=True, upload_to=train_image_path)
 
     def __str__(self):
@@ -93,8 +110,12 @@ class Train(models.Model):
 
 
 class Journey(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="journeys")
-    train = models.ForeignKey(Train, on_delete=models.CASCADE, related_name="journeys")
+    route = models.ForeignKey(
+        Route, on_delete=models.CASCADE, related_name="journeys"
+    )
+    train = models.ForeignKey(
+        Train, on_delete=models.CASCADE, related_name="journeys"
+    )
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
     crew = models.ManyToManyField(Crew, related_name="journeys")
@@ -112,7 +133,9 @@ class Journey(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return str(self.created_at)
@@ -122,8 +145,12 @@ class Order(models.Model):
 
 
 class Ticket(models.Model):
-    journey = models.ForeignKey(Journey, on_delete=models.CASCADE, related_name="tickets")
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    journey = models.ForeignKey(
+        Journey, on_delete=models.CASCADE, related_name="tickets"
+    )
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="tickets"
+    )
     carriage = models.PositiveSmallIntegerField()
     seat = models.PositiveSmallIntegerField()
 
@@ -164,7 +191,8 @@ class Ticket(models.Model):
         )
 
     def __str__(self):
-        return f"{str(self.journey)} (carriage: {self.carriage}, seat: {self.seat})"
+        return (f"{str(self.journey)} "
+                f"(carriage: {self.carriage}, seat: {self.seat})")
 
     class Meta:
         unique_together = ("journey", "carriage", "seat")

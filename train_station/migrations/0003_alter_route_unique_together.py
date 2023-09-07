@@ -5,7 +5,10 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("train_station", "0002_alter_crew_options_alter_route_unique_together"),
+        (
+            "train_station",
+            "0002_alter_crew_options_alter_route_unique_together",
+        ),
     ]
 
     operations = [
