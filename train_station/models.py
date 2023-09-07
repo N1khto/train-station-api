@@ -1,6 +1,10 @@
+import os
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
 
 
 class Station(models.Model):
@@ -48,6 +52,10 @@ class Crew(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     class Meta:
         verbose_name_plural = "crew"
 
@@ -59,14 +67,25 @@ class TrainType(models.Model):
         return self.name
 
 
+def train_image_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    return os.path.join("uploads/trains/", filename)
+
+
 class Train(models.Model):
     name = models.CharField(max_length=255)
     carriage_num = models.PositiveSmallIntegerField()
     places_in_carriage = models.PositiveSmallIntegerField()
     train_type = models.ForeignKey(TrainType, on_delete=models.SET_NULL, null=True, related_name="trains")
+    image = models.ImageField(null=True, upload_to=train_image_path)
 
     def __str__(self):
         return self.name
+
+    @property
+    def capacity(self):
+        return self.carriage_num * self.places_in_carriage
 
 
 class Journey(models.Model):
@@ -76,8 +95,12 @@ class Journey(models.Model):
     arrival_time = models.DateTimeField()
     crew = models.ManyToManyField(Crew, related_name="journeys")
 
-    def __str__(self):
+    @property
+    def info(self):
         return str(self.route) + " at " + str(self.departure_time)
+
+    def __str__(self):
+        return self.info
 
     class Meta:
         ordering = ["-departure_time"]
