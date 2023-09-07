@@ -27,7 +27,7 @@ class RouteViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Route.objects.all()
+    queryset = Route.objects.select_related("source", "destination")
     serializer_class = RouteSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -54,7 +54,7 @@ class TrainViewSet(
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Train.objects.all()
+    queryset = Train.objects.select_related("train_type")
     serializer_class = TrainSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -65,7 +65,7 @@ class CrewViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Crew.objects.all()
+    queryset = Crew.objects.prefetch_related("journeys__route__source", "journeys__route__destination")
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -83,9 +83,9 @@ class JourneyViewSet(
     mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
-    queryset = Journey.objects.all().select_related("route", "train").annotate(
+    queryset = Journey.objects.all().select_related("route__source", "route__destination", "train").annotate(
         tickets_available=(F("train__carriage_num") * F("train__places_in_carriage") - Count("tickets"))
-    )
+    ).prefetch_related("crew")
     serializer_class = JourneySerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -121,13 +121,15 @@ class OrderViewSet(
     mixins.CreateModelMixin,
     GenericViewSet,
 ):
-    queryset = Order.objects.all()
+    queryset = Order.objects.prefetch_related("tickets__journey")
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        queryset = self.queryset
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
