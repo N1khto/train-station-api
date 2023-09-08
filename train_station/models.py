@@ -89,7 +89,7 @@ class TrainType(models.Model):
 def train_image_path(instance, filename):
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
-    return os.path.join("uploads/trains/", filename)
+    return os.path.join("uploads", "trains", filename)
 
 
 class Train(models.Model):
