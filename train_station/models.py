@@ -21,13 +21,13 @@ class Route(models.Model):
         Station,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="route_source",
+        related_name="source_routes",
     )
     destination = models.ForeignKey(
         Station,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="route_destination",
+        related_name="destination_routes",
     )
     distance = models.PositiveSmallIntegerField()
 
@@ -122,7 +122,7 @@ class Journey(models.Model):
 
     @property
     def info(self):
-        return str(self.route) + " at " + str(self.departure_time)
+        return f"{str(self.route)} at {str(self.departure_time)}"
 
     def __str__(self):
         return self.info
