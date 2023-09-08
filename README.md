@@ -8,3 +8,15 @@ Modern authentication via JWT.
 Creation of orders and tickets available for all registered users.
 API has convenient documentation provided by drf_spectacular and Swagger.
 Optimised database queries.
+
+Setup
+Create and activate a virtual environment (Python3) using your preferred method. 
+This functionality is built into Python, if you do not have a preference.
+
+From the command line, type:
+
+git clone https://github.com/N1khto/train-station-api.git
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser 
+python manage.py runserver
